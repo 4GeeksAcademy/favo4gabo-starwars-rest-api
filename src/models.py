@@ -23,6 +23,14 @@ class People(db.Model):
     skin_color = db.Column(db.String(100), unique=True, nullable=False)
     favorites = db.relationship('Favorites', backref='people')
     #el backref lo que hace es que pueda usar las propiedades de la tabla desde la tabla donde lo estoy relacionando
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'eye_collor': self.eye_color,
+            'skin_color': self.skin_color,
+            'favorites': list(map(lambda favorites: favorites.serialize(), self.favorites))
+        }
 
 class Planets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,6 +40,16 @@ class Planets(db.Model):
     terrain = db.Column(db.String(100), unique=True, nullable=False)
     favorites = db.relationship('Favorites', backref='planets')
     #el backref lo que hace es que pueda usar las propiedades de la tabla desde la tabla donde lo estoy relacionando
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'rotation_period': self.rotation_period,
+            'climate': self.climate,
+            'terrain': self.terrain,
+            'favorites': list(map(lambda favorites: favorites.serialize(), self.favorites))
+        }
+    
 
 class Favorites(db.Model):
     id = db.Column(db.Integer, primary_key=True)

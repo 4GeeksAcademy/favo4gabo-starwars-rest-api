@@ -31,10 +31,12 @@ setup_admin(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
+
 # generate sitemap with all your endpoints
 @app.route('/')
 def sitemap():
     return generate_sitemap(app)
+
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
@@ -45,6 +47,8 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
+
+#  Listar todos los registros de people en la base de datos
 @app.route('/people', methods=['GET'])
 def get_people():
     people = People.query.all()
@@ -52,12 +56,16 @@ def get_people():
 
     return jsonify(people)
 
+
+# Listar la información de una sola people
 @app.route('/people/<int:id>', methods=['GET'])
-def get_people_id(id=None): #esta bien?
+def get_people_id(id=None): #asegurar darle un valor al id (buenas practicas)
     people = People.query.get(id)
 
     return jsonify(people)
 
+
+# Listar los registros de planets en la base de datos
 @app.route('/planets', methods=['GET'])
 def get_planets():
     planets = People.query.all()
@@ -65,12 +73,16 @@ def get_planets():
 
     return jsonify(planets)
 
+
+# Listar la información de un solo planet
 @app.route('/planets/<int:id>', methods=['GET'])
 def get_planets_id(id=None):
     planets = Planets.query.get(id)
 
     return jsonify(planets)
 
+
+# Listar todos los usuarios del blog
 @app.route('/users', methods=['GET'])
 def get_users():
     users = User.query.all()
@@ -78,6 +90,8 @@ def get_users():
 
     return jsonify(users)
 
+
+# Listar todos los favoritos que pertenecen al usuario actual
 @app.route('/users/<int:user_id>/favorites', methods=['GET'])
 def get_users_favorites(user_id=None):
     favorites = Favorites.query.filter_by(user_id = user_id).all()
@@ -87,6 +101,8 @@ def get_users_favorites(user_id=None):
         favorites = list(map(lambda item:item.serialize(), favorites))
         return jsonify(favorites)
     
+
+# Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.
 @app.route('/favorites/planets/<int:planets_id>', methods=['POST'])
 def add_planet_user(planets_id): #si el endpoint tiene una parte dinamica(planets_id), debo colocarselo como parametrp a la funcion
     body = request.json #.json no lleva parentesis -> obtengo lo que envio por body desde thunder
@@ -108,7 +124,25 @@ def add_planet_user(planets_id): #si el endpoint tiene una parte dinamica(planet
         return jsonify({'msg': 'se agrego el favorito'})
     except Exception as error:
         return jsonify({'msg': f'{error}'}), 500
+    
 
+# Añade una nueva people favorita al usuario actual con el people.id = people_id.
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def add_people(people_id):
+    body = request.json
+    user_id = body.get('user_id')
+    if user_id is None or people_id is None:
+        return jsonify({'msg': 'people_id and user_id is requery'}), 400
+    favorites = Favorites.query.filter_by(user_id = user_id, people_id = people_id).first()
+    db.session.add(favorites)
+    try: 
+        db.session.commit() #aqui se agregó
+        return jsonify({'msg': 'se agrego la people favorito'})
+    except Exception as error:
+        return jsonify({'msg': f'{error}'}), 500
+
+
+# Elimina un planet favorito con el id = planet_id`.
 @app.route('/favorite/planet/<int:planet_id>/<int:user_id>', methods=["DELETE"])
 #delete NO acepta body
 def delete_planets(planet_id, user_id):
@@ -125,6 +159,19 @@ def delete_planets(planet_id, user_id):
     except Exception as error:
         return jsonify({'msg': f'{error}'}), 500
 
+
+@app.route('/favorite/people/<int:people_id>', methods=["DELETE"])
+def delete_people(people_id, user_id):
+    favorites = Favorites.query.filter_by(people_id = people_id, user_id = user_id).first()
+    if favorites is None:
+        return jsonify({'msg': 'este favorito no existe'}), 404
+    # se prepara para borrar
+    db.session.delete(favorites)
+    try: #para asegurar si algo falla -> por eso el commit va dentro del try
+        db.session.commit() #aqui se borro
+        return jsonify({'msg': 'el favorito se elimino'})
+    except Exception as error:
+        return jsonify({'msg': f'{error}'}), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
