@@ -95,11 +95,11 @@ def get_users():
 @app.route('/users/<int:user_id>/favorites', methods=['GET'])
 def get_users_favorites(user_id=None):
     favorites = Favorites.query.filter_by(user_id = user_id).all()
-    if favorites is None:
-        return jsonify({'msg': "not found favorites"}), 404
-    else:
-        favorites = list(map(lambda item:item.serialize(), favorites))
-        return jsonify(favorites)
+    # if favorites is None:
+        # return jsonify({'msg': "not found favorites"}), 404
+    # else:
+    favorites = list(map(lambda item:item.serialize(), favorites))
+    return jsonify(favorites), 200
     
 
 # Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.
