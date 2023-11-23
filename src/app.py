@@ -60,7 +60,10 @@ def get_people():
 # Listar la información de una sola people
 @app.route('/people/<int:id>', methods=['GET'])
 def get_people_id(id=None): #asegurar darle un valor al id (buenas practicas)
-    people = People.query.get(id)
+    people = People.query.get(id).serialize()
+
+    # people = lambda item: item.serialize()
+    # por que no sirve?
 
     return jsonify(people)
 
@@ -77,7 +80,7 @@ def get_planets():
 # Listar la información de un solo planet
 @app.route('/planets/<int:id>', methods=['GET'])
 def get_planets_id(id=None):
-    planets = Planets.query.get(id)
+    planets = Planets.query.get(id).serialize()
 
     return jsonify(planets)
 
@@ -121,19 +124,23 @@ def add_planet_user(planets_id): #si el endpoint tiene una parte dinamica(planet
     db.session.add(favorites)
     try: 
         db.session.commit() #aqui se agregó
-        return jsonify({'msg': 'se agrego el favorito'})
+        return jsonify({'msg': 'se agrego el planet favorito'})
     except Exception as error:
         return jsonify({'msg': f'{error}'}), 500
     
 
 # Añade una nueva people favorita al usuario actual con el people.id = people_id.
-@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+@app.route('/favorites/people/<int:people_id>', methods=['POST'])
 def add_people(people_id):
     body = request.json
     user_id = body.get('user_id')
     if user_id is None or people_id is None:
         return jsonify({'msg': 'people_id and user_id is requery'}), 400
-    favorites = Favorites.query.filter_by(user_id = user_id, people_id = people_id).first()
+    favorites = Favorites(user_id = body.get('user_id'), people_id = people_id)
+    if favorites:
+        return jsonify({'msg': 'this favorite exist'})
+    #instanciar la clase
+    favorites = Favorites(user_id = body.get('user_id'), people_id = people_id)
     db.session.add(favorites)
     try: 
         db.session.commit() #aqui se agregó
@@ -159,8 +166,8 @@ def delete_planets(planet_id, user_id):
     except Exception as error:
         return jsonify({'msg': f'{error}'}), 500
 
-
-@app.route('/favorite/people/<int:people_id>', methods=["DELETE"])
+# Elimina una people favorita con el id = people_id.
+@app.route('/favorite/people/<int:people_id>/<int:user_id>', methods=["DELETE"])
 def delete_people(people_id, user_id):
     favorites = Favorites.query.filter_by(people_id = people_id, user_id = user_id).first()
     if favorites is None:

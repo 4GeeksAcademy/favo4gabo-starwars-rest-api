@@ -19,8 +19,8 @@ class User(db.Model):
 class People(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    eye_color = db.Column(db.String(100), unique=True, nullable=False)
-    skin_color = db.Column(db.String(100), unique=True, nullable=False)
+    eye_color = db.Column(db.String(100), nullable=False)
+    skin_color = db.Column(db.String(100), nullable=False)
     favorites = db.relationship('Favorites', backref='people')
     #el backref lo que hace es que pueda usar las propiedades de la tabla desde la tabla donde lo estoy relacionando
     def serialize(self):
@@ -35,9 +35,9 @@ class People(db.Model):
 class Planets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    rotation_period = db.Column(db.String(100), unique=True, nullable=False)
-    climate = db.Column(db.String(100), unique=True, nullable=False)
-    terrain = db.Column(db.String(100), unique=True, nullable=False)
+    rotation_period = db.Column(db.String(100), nullable=False)
+    climate = db.Column(db.String(100), nullable=False)
+    terrain = db.Column(db.String(100), nullable=False)
     favorites = db.relationship('Favorites', backref='planets')
     #el backref lo que hace es que pueda usar las propiedades de la tabla desde la tabla donde lo estoy relacionando
     def serialize(self):
